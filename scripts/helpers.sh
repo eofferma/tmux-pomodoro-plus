@@ -72,7 +72,11 @@ send_notification() {
 		export sound
 		case "$OSTYPE" in
 		linux* | *bsd*)
-			notify-send -t 8000 "$title" "$message"
+			notify-send --urgency critical \
+				--app-name "Pomodoro Timer" \
+				--expire-time 5000 \
+				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
+				"$title" "$message"
 			if [[ "$sound" == "on" ]]; then
 				mpg123 -q ~/.config/tmux/pomodoro.mp3
 			fi
