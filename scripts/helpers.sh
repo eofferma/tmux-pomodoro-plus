@@ -68,13 +68,14 @@ send_notification() {
 	if [ "$(get_notifications)" == 'on' ]; then
 		local title=$1
 		local message=$2
+		local duration_ms=${3:-5000}
 		sound=$(get_sound)
 		export sound
 		case "$OSTYPE" in
 		linux* | *bsd*)
 			notify-send --urgency critical \
 				--app-name "Pomodoro Timer" \
-				--expire-time 5000 \
+				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
 				"$title" "$message"
 			if [[ "$sound" == "on" ]]; then
