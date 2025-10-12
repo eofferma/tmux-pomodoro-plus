@@ -64,12 +64,39 @@ minutes_to_seconds() {
 	echo $((minutes * 60))
 }
 
+notifications_muted() {
+	case "$OSTYPE" in
+	linux* | *bsd*)
+		if command -v gsettings >/dev/null 2>&1; then
+			local banners
+			banners=$(gsettings get org.gnome.desktop.notifications show-banners 2>/dev/null)
+			if [[ "$banners" == 'false' ]]; then
+				return 0
+			fi
+		fi
+		;;
+	esac
+
+	return 1
+}
+
 send_notification() {
+	# Params: title, message, play_sound=false, duration_ms=5000
+	# - Sound only plays when play_sound=true, @pomodoro_sound isn't "off", and GNOME banners are on.
+	#   (play_sound is set true for events like "start working again" so you hear the cue.)
+	# - duration_ms controls notify-send expire time.
+	# - If GNOME "Do Not Disturb" is active (notifications_muted), we still send the banner but skip audio.
 	if [ "$(get_notifications)" == 'on' ]; then
 		local title=$1
 		local message=$2
-		local finished=${3:-false}
+		local play_sound=${3:-false}
 		local duration_ms=${4:-5000}
+		local allow_sound=true
+
+		if notifications_muted; then
+			allow_sound=false
+		fi
+
 		sound=$(get_sound)
 		export sound
 		case "$OSTYPE" in
@@ -79,7 +106,7 @@ send_notification() {
 				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
 				"$title" "$message"
-			if $finished; then
+			if $play_sound && [ "$allow_sound" = true ]; then
 				if [[ "$sound" == "on" ]]; then
 					mpg123 -q ~/.config/tmux/pomodoro.mp3
 				elif [[ "$sound" != "off" ]]; then
@@ -88,7 +115,7 @@ send_notification() {
 			fi
 			;;
 		darwin*)
-			if [[ "$sound" != "off" ]] && $finished; then
+			if [[ "$sound" != "off" ]] && $play_sound && [ "$allow_sound" = true ]; then
 				osascript -e 'display notification "'"$message"'" with title "'"$title"'" sound name "'"$sound"'"'
 			else
 				osascript -e 'display notification "'"$message"'" with title "'"$title"'"'
