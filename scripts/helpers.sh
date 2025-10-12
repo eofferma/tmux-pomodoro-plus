@@ -90,7 +90,7 @@ send_notification() {
 		local title=$1
 		local message=$2
 		local play_sound=${3:-false}
-		local duration_ms=${4:-5000}
+		local duration_ms=${4:-3000}
 		local allow_sound=true
 
 		if notifications_muted; then
