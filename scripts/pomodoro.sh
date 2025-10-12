@@ -12,7 +12,7 @@ TIME_PAUSED_FOR_FILE="$POMODORO_DIR/time_paused_for.txt" # Stores the time when 
 FROZEN_DISPLAY_FILE="$POMODORO_DIR/frozen_display.txt"   # Stores the countdown when the Pomodoro/break was paused
 INTERVAL_FILE="$POMODORO_DIR/interval_count.txt"         # Stores the current increment count
 STATUS_FILE="$POMODORO_DIR/current_status.txt"           # Stores the current status of the Pomodoro/break
-BREAK_NOTIFICATION_DURATION_MS=$((2 * 60 * 1000))
+BREAK_NOTIFICATION_DURATION_MS=$((5 * 60 * 1000))
 
 # Store the user's custom timings
 mkdir -p $POMODORO_USER

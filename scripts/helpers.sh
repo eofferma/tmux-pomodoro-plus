@@ -73,7 +73,7 @@ send_notification() {
 		export sound
 		case "$OSTYPE" in
 		linux* | *bsd*)
-			notify-send --urgency critical \
+			notify-send --urgency normal \
 				--app-name "Pomodoro Timer" \
 				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
