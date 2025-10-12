@@ -270,6 +270,7 @@ increment_interval() {
 
 pomodoro_start() {
 	local verb=${1:-start}
+	local notify=${2:-true}
 
 	clean_env
 	mkdir -p $POMODORO_DIR
@@ -282,7 +283,9 @@ pomodoro_start() {
 	fi
 
 	refresh_statusline
-	send_notification "🍅 Pomodoro ${verb}ed!" "Your Pomodoro is underway"
+	if [ "$notify" != "false" ]; then
+		send_notification "🍅 Pomodoro ${verb}ed!" "Your Pomodoro is underway"
+	fi
 	return 0
 }
 
@@ -505,13 +508,17 @@ pomodoro_status() {
 	if [ "$break_complete" = true ] && { [ "$pomodoro_status" == "break" ] || [ "$pomodoro_status" == "long_break" ]; }; then
 		remove_time_paused_file
 
+		local break_done_title="🍅 Break completed!"
+		local break_done_body="Start the Pomodoro?"
 		if prompt_user; then
 			set_status "waiting_for_pomodoro"
-			send_notification "🍅 Break completed!" "Start the Pomodoro?" true
+			send_notification "$break_done_title" "$break_done_body" true
 			return 0
 		fi
 
-		pomodoro_start
+		# Auto-repeat enabled: still alert (with sound) before resuming work
+		send_notification "$break_done_title" "Break finished, a new Pomodoro is starting!" true
+		pomodoro_start start false
 	fi
 }
 
