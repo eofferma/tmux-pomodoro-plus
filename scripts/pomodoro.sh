@@ -294,7 +294,7 @@ break_start() {
 	write_to_file "$(get_seconds)" "$START_FILE"
 
 	refresh_statusline
-	send_notification "🍅 Break started!" "Your break is underway" "$BREAK_NOTIFICATION_DURATION_MS"
+	send_notification "🍅 Break started!" "Your break is underway" false "$BREAK_NOTIFICATION_DURATION_MS"
 	return 0
 }
 
@@ -454,7 +454,7 @@ pomodoro_status() {
 		if prompt_user; then
 			pomodoro_status="waiting_for_break"
 			set_status "$pomodoro_status"
-			send_notification "🍅 Pomodoro completed!" "Start the break now?"
+			send_notification "🍅 Pomodoro completed!" "Start the break now?" true
 			return 0
 		fi
 
@@ -473,7 +473,7 @@ pomodoro_status() {
 
 		if prompt_user; then
 			set_status "waiting_for_pomodoro"
-			send_notification "🍅 Pomodo completed!" "Start a new Pomodoro?"
+			send_notification "🍅 Pomodo completed!" "Start a new Pomodoro?" true
 			return 0
 		fi
 
@@ -507,7 +507,7 @@ pomodoro_status() {
 
 		if prompt_user; then
 			set_status "waiting_for_pomodoro"
-			send_notification "🍅 Break completed!" "Start the Pomodoro?"
+			send_notification "🍅 Break completed!" "Start the Pomodoro?" true
 			return 0
 		fi
 

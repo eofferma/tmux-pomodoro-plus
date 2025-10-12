@@ -68,7 +68,8 @@ send_notification() {
 	if [ "$(get_notifications)" == 'on' ]; then
 		local title=$1
 		local message=$2
-		local duration_ms=${3:-5000}
+		local finished=${3:-false}
+		local duration_ms=${4:-5000}
 		sound=$(get_sound)
 		export sound
 		case "$OSTYPE" in
@@ -78,15 +79,19 @@ send_notification() {
 				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
 				"$title" "$message"
-			if [[ "$sound" == "on" ]]; then
-				mpg123 -q ~/.config/tmux/pomodoro.mp3
+			if $finished; then
+				if [[ "$sound" == "on" ]]; then
+					mpg123 -q ~/.config/tmux/pomodoro.mp3
+				elif [[ "$sound" != "off" ]]; then
+					$sound
+				fi
 			fi
 			;;
 		darwin*)
-			if [[ "$sound" == "off" ]]; then
-				osascript -e 'display notification "'"$message"'" with title "'"$title"'"'
-			else
+			if [[ "$sound" != "off" ]] && $finished; then
 				osascript -e 'display notification "'"$message"'" with title "'"$title"'" sound name "'"$sound"'"'
+			else
+				osascript -e 'display notification "'"$message"'" with title "'"$title"'"'
 			fi
 			;;
 		esac
