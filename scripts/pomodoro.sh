@@ -297,7 +297,7 @@ break_start() {
 	write_to_file "$(get_seconds)" "$START_FILE"
 
 	refresh_statusline
-	send_notification "🍅 Break started!" "Your break is underway" false "$BREAK_NOTIFICATION_DURATION_MS"
+	send_notification "🍅 Break started!" "Your break is underway" true "$BREAK_NOTIFICATION_DURATION_MS"
 	return 0
 }
 
