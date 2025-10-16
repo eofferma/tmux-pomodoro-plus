@@ -52,16 +52,49 @@ write_to_file() {
 }
 
 if_inside_tmux() {
-	test -n "${TMUX}"
+	if [ -n "${TMUX}" ]; then
+		return 0
+	fi
+	return 1
 }
 
 refresh_statusline() {
-	if_inside_tmux && tmux refresh-client -S
+	if_inside_tmux && tmux refresh-client -S >/dev/null 2>&1
 }
 
 minutes_to_seconds() {
 	local minutes=$1
 	echo $((minutes * 60))
+}
+
+notification_env_file() {
+	local dir="${POMODORO_DIR:-/tmp}"
+	echo "${dir}/notify_env.sh"
+}
+
+load_notification_env() {
+	local env_file
+	env_file=$(notification_env_file)
+
+	if [ -z "${DISPLAY:-}" ] || [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+		if [ -f "$env_file" ]; then
+			# shellcheck disable=SC1090
+			. "$env_file"
+		fi
+	fi
+}
+
+cache_notification_env() {
+	local env_file
+	env_file=$(notification_env_file)
+
+	if [ -n "${DISPLAY:-}" ] && [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+		mkdir -p "$(dirname "$env_file")"
+		{
+			printf 'export DISPLAY=%q\n' "$DISPLAY"
+			printf 'export DBUS_SESSION_BUS_ADDRESS=%q\n' "$DBUS_SESSION_BUS_ADDRESS"
+		} >"$env_file"
+	fi
 }
 
 notifications_muted() {
@@ -86,7 +119,10 @@ send_notification() {
 	#   (play_sound is set true for events like "start working again" so you hear the cue.)
 	# - duration_ms controls notify-send expire time.
 	# - If GNOME "Do Not Disturb" is active (notifications_muted), we still send the banner but skip audio.
-	if [ "$(get_notifications)" == 'on' ]; then
+	local notifications_setting
+	notifications_setting="$(get_notifications)"
+
+	if [ "$notifications_setting" == 'on' ]; then
 		local title=$1
 		local message=$2
 		local play_sound=${3:-false}
@@ -101,11 +137,18 @@ send_notification() {
 		export sound
 		case "$OSTYPE" in
 		linux* | *bsd*)
-			notify-send --urgency normal \
+			load_notification_env
+			local urgency="normal"
+			if [[ "$duration_ms" =~ ^[0-9]+$ ]] && [ "$duration_ms" -ge 60000 ]; then
+				urgency="critical"
+			fi
+
+			notify-send --urgency "$urgency" \
 				--app-name "Pomodoro Timer" \
 				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
 				"$title" "$message"
+			cache_notification_env
 			if $play_sound && [ "$allow_sound" = true ]; then
 				if [[ "$sound" == "on" ]]; then
 					mpg123 -q ~/.config/tmux/pomodoro.mp3
