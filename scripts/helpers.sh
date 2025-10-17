@@ -138,12 +138,7 @@ send_notification() {
 		case "$OSTYPE" in
 		linux* | *bsd*)
 			load_notification_env
-			local urgency="normal"
-			if [[ "$duration_ms" =~ ^[0-9]+$ ]] && [ "$duration_ms" -ge 60000 ]; then
-				urgency="critical"
-			fi
-
-			notify-send --urgency "$urgency" \
+			notify-send --urgency normal \
 				--app-name "Pomodoro Timer" \
 				--expire-time "$duration_ms" \
 				--icon /home/farkore/.config/tmux/icon-pomodoro.png \
